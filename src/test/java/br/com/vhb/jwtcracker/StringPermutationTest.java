@@ -17,7 +17,7 @@ public class StringPermutationTest {
 
 	@Before
 	public void init() {
-		stringPermutation = new StringPermutation(ALPHABET, 2);
+		stringPermutation = new StringPermutation(ALPHABET);
 	}
 
 	@Test

@@ -1,44 +1,59 @@
 package br.com.vhb.jwtcracker;
 
+import java.io.File;
 import java.text.NumberFormat;
-import java.time.Duration;
-import java.time.Instant;
+import java.util.function.Predicate;
+
+import org.apache.log4j.Logger;
 
 public class JWTCracker {
+	private static final Logger LOG = Logger.getLogger(JWTCracker.class.getName());
 
-	public static void main(String[] args) {
-		args = new String[] {
-				"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.27IdDqX6PfoeotXOJ_gScnr8VZvU9mU4KIqsfhoR5ls" };
-		String[] jwtTokens = args[0].split("\\.");
+	private static final NumberFormat NUMBER = NumberFormat.getInstance();
+	private KeyGenerator keyGenerator;
+	private Predicate<String> stopCondition;
+
+	private JWTCracker(KeyGenerator keyGenerator, Predicate<String> stopCondition) {
+		this.keyGenerator = keyGenerator;
+		this.stopCondition = stopCondition;
+	}
+
+	public static JWTCracker byStringPermutation(String alphabet, Integer maxLength) {
+		return new JWTCracker(new StringPermutation(alphabet), (word) -> word.length() > maxLength);
+	}
+
+	public static JWTCracker byWordList(String fileStr) {
+		File file = new File(fileStr);
+//		return new JWTCracker(null, (word) -> word == null);
+		throw new RuntimeException("Not implemented...");
+	}
+
+	public void crack(String token) {
+		String[] jwtTokens = token.split("\\.");
 		String header = jwtTokens[0];
 		String payload = jwtTokens[1];
 		String signature = jwtTokens[2];
-		GenerateSignature generateSignature = new GenerateSignature();
-		StringPermutation stringPermutation = new StringPermutation("abcdefghijklmnopqrstuwxyz0123456789!", 10);
-		NumberFormat instance = NumberFormat.getInstance();
 
-		Instant start = Instant.now();
-		String next = stringPermutation.next();
+		String next = keyGenerator.next();
 		long attempts = 0;
 		boolean found = false;
-		while (next != null) {
+		while (stopCondition.test(next)) {
 			attempts++;
-			String check = generateSignature.signature(header, payload, next);
-
+			String check = GenerateSignature.signature(header, payload, next);
+			LOG.debug("[" + attempts + "] - [" + next + "]");
 			if (check.equalsIgnoreCase(signature)) {
-				System.out.println("FOUND KEY [" + next + "] - [" + instance.format(attempts) + "] " + check);
+				LOG.info("FOUND KEY [" + next + "] - [" + NUMBER.format(attempts) + "] " + check);
 				found = true;
 				break;
 			}
 			if (attempts % 1000000 == 0) {
-				System.out.println("Attempts: [" + instance.format(attempts) + "]");
+				LOG.info("Attempts: [" + NUMBER.format(attempts) + "]");
 			}
-			next = stringPermutation.next();
+			next = keyGenerator.next();
 		}
-		Instant end = Instant.now();
-		System.out.println(Duration.between(start, end)); // prints PT1M3.553S
+
 		if (!found) {
-			System.out.println("NOTHING Found: [" + instance.format(attempts) + "] ");
+			LOG.info("NOTHING Found: [" + NUMBER.format(attempts) + "] ");
 		}
 
 	}

@@ -8,17 +8,49 @@ import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * Create JWT signture
+ * 
+ * @author victor
+ *
+ */
 public class GenerateSignature {
 
-	public String signature(String header, String payload, String key) {
+	/**
+	 * Returns jwt signature <b>without using</b> base64 encode on each parameter
+	 * 
+	 * @param header
+	 *            - jwt's header
+	 * @param payload
+	 *            - jwt's payload
+	 * @param key
+	 *            - jwt's key
+	 * @return signature created
+	 */
+	public static String signature(String header, String payload, String key) {
 		return hmacSha256(header + "." + payload, key);
 	}
 
-	public String signatureBase64(String header, String payload, String key) {
-		return hmacSha256(encode(header.getBytes()) + "." + encode(payload.getBytes()), key);
+	/**
+	 * Returns jwt signature <b>using</b> base64 encode on each parameter
+	 * 
+	 * @param header
+	 *            - jwt's header
+	 * @param payload
+	 *            - jwt's payload
+	 * @param key
+	 *            - jwt's key
+	 * @return signature created
+	 */
+	public static String signatureBase64(String header, String payload, String key) {
+		return hmacSha256(encode(header.getBytes()) + "." + encode(payload.getBytes()), encode(key.getBytes()));
 	}
 
-	private String hmacSha256(String data, String secret) {
+	public static String encode(byte[] bytes) {
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+	}
+
+	private static String hmacSha256(String data, String secret) {
 		try {
 			byte[] hash = secret.getBytes(StandardCharsets.UTF_8);
 			Mac sha256Hmac = Mac.getInstance("HmacSHA256");
@@ -29,10 +61,6 @@ public class GenerateSignature {
 		} catch (NoSuchAlgorithmException | InvalidKeyException ex) {
 			return null;
 		}
-	}
-
-	private String encode(byte[] bytes) {
-		return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
 	}
 
 }
