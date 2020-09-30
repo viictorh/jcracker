@@ -4,10 +4,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>br.com.vhb</groupId>
-	<artifactId>jwtcracker</artifactId>
-	<version>0.0.1</version>
+	<artifactId>jcracker</artifactId>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
-	<name>jwtcracker</name>
+	<name>jcracker</name>
 
 
 	<properties>
@@ -46,6 +46,12 @@
 			<version>4.13</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>pl.pragmatists</groupId>
+			<artifactId>JUnitParams</artifactId>
+			<version>1.1.1</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 
@@ -62,7 +68,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>br.com.vhb.jwtcracker.Main</mainClass>
+							<mainClass>br.com.vhb.jcracker.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

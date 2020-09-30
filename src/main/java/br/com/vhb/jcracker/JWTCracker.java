@@ -1,13 +1,11 @@
-package br.com.vhb.jwtcracker;
+package br.com.vhb.jcracker;
 
-import java.io.File;
+import static br.com.vhb.jcracker.Main.LOG;
+
 import java.text.NumberFormat;
 import java.util.function.Predicate;
 
-import org.apache.log4j.Logger;
-
 public class JWTCracker {
-	private static final Logger LOG = Logger.getLogger(JWTCracker.class.getName());
 
 	private static final NumberFormat NUMBER = NumberFormat.getInstance();
 	private KeyGenerator keyGenerator;
@@ -19,13 +17,11 @@ public class JWTCracker {
 	}
 
 	public static JWTCracker byStringPermutation(String alphabet, Integer maxLength) {
-		return new JWTCracker(new StringPermutation(alphabet), (word) -> word.length() > maxLength);
+		return new JWTCracker(new StringPermutation(alphabet), (word) -> word.length() <= maxLength);
 	}
 
 	public static JWTCracker byWordList(String fileStr) {
-		File file = new File(fileStr);
-//		return new JWTCracker(null, (word) -> word == null);
-		throw new RuntimeException("Not implemented...");
+		return new JWTCracker(new WordReader(fileStr), (word) -> word != null);
 	}
 
 	public void crack(String token) {
@@ -53,7 +49,7 @@ public class JWTCracker {
 		}
 
 		if (!found) {
-			LOG.info("NOTHING Found: [" + NUMBER.format(attempts) + "] ");
+			LOG.info("NOTHING Found: [" + NUMBER.format(attempts) + "] lastWord: " + next);
 		}
 
 	}

@@ -1,4 +1,4 @@
-package br.com.vhb.jwtcracker;
+package br.com.vhb.jcracker;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -19,18 +19,18 @@ public class Main {
 	private static final String DEFAULT_MAX_LENGTH = "14";
 	private static final String DEFAULT_ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("version");
-	private static final Logger LOG = Logger.getLogger(Main.class.getName());
+	public static final Logger LOG = Logger.getLogger("JWTCracker");
 
 	public static void main(String[] args) throws ParseException {
 		LOG.setLevel(Level.ALL);
 		LOG.info(BUNDLE.getString("flag"));
-		LOG.setLevel(Level.INFO);
 		Instant start = Instant.now();
-		Settings options = readOptions(args);
-		if (StringUtils.isNotBlank(options.fileStr)) {
-			JWTCracker.byWordList(options.fileStr).crack(options.token);
+		Settings settings = readOptions(args);
+		LOG.info(settings);
+		if (StringUtils.isNotBlank(settings.fileStr)) {
+			JWTCracker.byWordList(settings.fileStr).crack(settings.token);
 		} else {
-			JWTCracker.byStringPermutation(options.alphabet, options.maxLength).crack(options.token);
+			JWTCracker.byStringPermutation(settings.alphabet, settings.maxLength).crack(settings.token);
 		}
 		LOG.info("TIME SPENT: " + Duration.between(start, Instant.now()));
 	}
@@ -40,15 +40,13 @@ public class Main {
 		options.addRequiredOption("t", "token", true, "Full JWT");
 		options.addOption("a", "alphabet", true,
 				"Alphabet to be used to brute force (default = " + DEFAULT_ALPHABET + ")");
-		options.addOption(new Option("b", "base64", true,
-				"Use '0' to tries plaintext key. '1' to tries base64 key or 'b' for both. Default = 0"));
 		options.addOption(new Option("f", "file", true, "Uses a file as wordlist"));
 		options.addOption(new Option("m", "max-length", true,
 				"Max alphabet length (use with alphabet. default = " + DEFAULT_MAX_LENGTH + ")"));
 		options.addOption(
 				new Option("v", "verbose", false, "Show all runing activity. It can slow down the application"));
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java -jar jwtCracker.jar ", options, true);
+		formatter.printHelp("java -jar jcracker.jar ", options, true);
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
 		try {
@@ -64,31 +62,40 @@ public class Main {
 
 	private static class Settings {
 		String token;
-		String base64;
-		String verbose;
+		boolean verbose;
 		String fileStr;
 		String alphabet;
 		Integer maxLength;
 
 		public Settings(CommandLine cmd) {
 			token = cmd.getOptionValue("t");
-			base64 = cmd.getOptionValue("b");
-			verbose = cmd.getOptionValue("v");
+			verbose = cmd.hasOption("v");
 			fileStr = cmd.getOptionValue("f");
 			alphabet = cmd.getOptionValue("a");
 			String maxLength = cmd.getOptionValue("m");
 
-			if (StringUtils.isBlank(base64))
-				base64 = "0";
+			if (!PatternCheck.JWT.isOk(token))
+				throw new RuntimeException("Invalid JWT");
 			if (StringUtils.isBlank(alphabet))
 				alphabet = DEFAULT_ALPHABET;
 			if (StringUtils.isBlank(maxLength))
 				maxLength = DEFAULT_MAX_LENGTH;
-			if (StringUtils.isNotBlank(verbose))
-				LOG.setLevel(Level.ALL);
+			if (!verbose)
+				LOG.setLevel(Level.INFO);
 
 			this.maxLength = Integer.parseInt(maxLength);
+		}
 
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("\nCracking: ").append(token).append(System.lineSeparator());
+			if (StringUtils.isNotBlank(fileStr))
+				sb.append("Using file: ").append(fileStr).append(System.lineSeparator());
+			else
+				sb.append("Using alphabet: ").append(alphabet).append(" With length: ").append(maxLength)
+						.append(System.lineSeparator());
+			return sb.toString();
 		}
 
 	}

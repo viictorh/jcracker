@@ -1,4 +1,4 @@
-package br.com.vhb.jwtcracker;
+package br.com.vhb.jcracker;
 
 /**
  * Class responsible to generate all possibilities of an alphabet.
