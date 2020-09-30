@@ -1,25 +1,31 @@
-package br.com.vhb.jwtcracker;
+package br.com.vhb.jcracker;
 
-public class StringPermutation {
+/**
+ * Class responsible to generate all possibilities of an alphabet.
+ * 
+ * 
+ * @author victor
+ *
+ */
+public class StringPermutation implements KeyGenerator {
 
 	private char[] alphabet;
-	private int maxLength;
 	private String lastWord;
 
-	public StringPermutation(String alphabet, int maxLength) {
+	public StringPermutation(String alphabet) {
 		this.alphabet = alphabet.toCharArray();
-		this.maxLength = maxLength;
 		char c = this.alphabet[0];
 		this.lastWord = String.valueOf((char) --c);
 	}
 
+	/**
+	 * 
+	 * @return returns next possibility based on the last word generated
+	 */
+	@Override
 	public String next() {
-		String next = next(lastWord);
-		lastWord = next;
-		if ((maxLength + 1) == lastWord.length()) {
-			return null;
-		}
-		return next;
+		lastWord = next(lastWord);
+		return lastWord;
 	}
 
 	private String next(String s) {
